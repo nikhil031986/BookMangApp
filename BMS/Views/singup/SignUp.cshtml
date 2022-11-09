@@ -1,0 +1,111 @@
+
+@{
+    ViewData["Title"] = "SignUp";
+}
+<h1>@ViewData["Title"]</h1>
+<div class="container">
+	<div class="screen">
+		<div class="screen__content">
+			<form class="login">
+				<div class="login__field">
+					<i class="login__icon fas fa-user"></i>
+					<input type="text" class="login__input" id="UserEmailId" placeholder="User name / Email">
+				</div>
+				<div class="login__field">
+					<i class="login__icon fas fa-lock"></i>
+					<input type="password" id="UserPassword" class="login__input" placeholder="Password">
+				</div>
+                <div class="login__field">
+					<i class="login__icon fas fa-lock"></i>
+					<input type="password" id="Conformpassword" class="login__input" placeholder="Password">
+				</div>
+				<button type="button" class="button login__submit" onclick="submitData();">
+					<span class="button__text">Sing Up</span>
+					<i class="button__icon fas fa-chevron-right"></i>
+				</button>				
+			</form>
+		</div>
+		<div class="screen__background">
+			<span class="screen__background__shape screen__background__shape4"></span>
+			<span class="screen__background__shape screen__background__shape3"></span>		
+			<span class="screen__background__shape screen__background__shape2"></span>
+			<span class="screen__background__shape screen__background__shape1"></span>
+		</div>		
+	</div>
+</div>
+
+<script type="text/javascript">
+function submitData(){
+	var userEmailId = document.getElementById("UserEmailId").value;
+	var userPassword = document.getElementById("UserPassword").value;
+    var Conformpassword =document.getElementById("Conformpassword").value;
+	if(typeof userEmailId=='undefined' || userEmailId==''){
+		document.getElementById("UserEmailId").focus();
+		alert('Enter User Email Id..');
+		return;
+	}
+	if((typeof userPassword=='undefined' || userPassword=='') || (typeof Conformpassword=='undefined' || Conformpassword=='')){
+		document.getElementById("UserPassword").focus();
+		alert('Enter User password..');
+		return;
+	}
+	if(userPassword != Conformpassword){
+		document.getElementById("UserPassword").focus();
+		alert('Enter User password..');
+		return;
+	}
+	if(!CheckPassword(userPassword)){
+		document.getElementById("UserPassword").focus();
+		alert('Enter User password..');
+		return;
+	}
+	$.ajax({
+                type: "GET",
+                url: "@Url.Action("GetPasswordSHAFormate","Login")",
+				data: {password: userPassword},
+                dataType: "text",
+                success: function (result, status, xhr) {
+					console.log(result);
+                    singupprocess(result,userEmailId);
+                },
+                error: function (xhr, status, error) {
+                    alert("Result: " + status + " " + error + " " + xhr.status + " " + xhr.statusText)
+                }
+            });
+}    
+function CheckPassword(password){
+	if(password)
+	{
+		if(password.length<6){
+			return false;
+		}
+		var format = /[ `!@@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/;
+		if(!format.test(password)){
+			return false;
+		}		
+	}
+	return true;
+}
+function singupprocess(password,userEmailId){
+	$.ajax({
+				type: "POST",
+				url: "@Url.Action("CreateUser")",
+				data: {userEmailId: userEmailId,
+					password: password},
+				dataType: "text",
+				success: function (result, status, xhr) {
+					console.log(result);
+					if(status=200){
+						window.location.replace("@Url.Action("Login","Login")");
+					}
+					else{
+						alert(result);
+					}
+					//$('body').html(result);
+				},
+				error: function (xhr, status, error) {
+					alert("Result: " + status + " " + error.message + " " + xhr.status + " " + xhr.statusText)
+				}
+			});
+}
+</script>
